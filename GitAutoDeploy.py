@@ -47,7 +47,7 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
         items = []
         for itemString in post['payload']:
             item = json.loads(itemString)
-            items.append(item['repository']['url'])
+            items.append(item['canon_url']+item['repository']['absolute_url'])
         return items
 
     def getMatchingPaths(self, repoUrl):
