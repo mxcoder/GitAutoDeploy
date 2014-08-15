@@ -35,7 +35,7 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
     def do_POST(self):
         urls = self.parseRequest()
         for url in urls:
-            paths = self.getMatchingPaths(url)
+            paths = self.getMatchingPaths(url[0], url[1])
             for path in paths:
                 self.pull(path)
                 self.deploy(path)
@@ -47,14 +47,14 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
         items = []
         for itemString in post['payload']:
             item = json.loads(itemString)
-            items.append(item['canon_url']+item['repository']['absolute_url'])
+            items.append((item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name']))
         return items
 
-    def getMatchingPaths(self, repoUrl):
+    def getMatchingPaths(self, repoUrl, repoBranch):
         res = []
         config = self.getConfig()
         for repository in config['repositories']:
-            if(repository['url'] == repoUrl):
+            if(repository['url'] == repoUrl and repository['branch'] == repoBranch):
                 res.append(repository['path'])
         return res
 
