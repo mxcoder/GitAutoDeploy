@@ -4,6 +4,7 @@
 	[{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/Test-Repo",
+		"branch": "develop"
 		"deploy": "echo deploying"
 	}, 
 	{
