@@ -43,10 +43,9 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
     def parseRequest(self):
         length = int(self.headers.getheader('content-length'))
         body = self.rfile.read(length)
-        post = urlparse.parse_qs(body)
         items = []
-        for itemString in post['payload']:
-            item = json.loads(itemString)
+        if body:
+            item = json.loads(body)
             items.append((item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name']))
         return items
 
@@ -82,13 +81,13 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
 def main():
     try:
         server = None
-        for arg in sys.argv: 
+        for arg in sys.argv:
             if(arg == '-d' or arg == '--daemon-mode'):
                 GitAutoDeploy.daemon = True
                 GitAutoDeploy.quiet = True
             if(arg == '-q' or arg == '--quiet'):
                 GitAutoDeploy.quiet = True
-                
+
         if(GitAutoDeploy.daemon):
             pid = os.fork()
             if(pid != 0):
@@ -99,7 +98,7 @@ def main():
             print 'Github Autodeploy Service v 0.1 started'
         else:
             print 'Github Autodeploy Service v 0.1 started in daemon mode'
-             
+
         server = HTTPServer(('', GitAutoDeploy.getConfig()['port']), GitAutoDeploy)
         server.serve_forever()
     except (KeyboardInterrupt, SystemExit) as e:
