@@ -38,6 +38,7 @@ Make sure that you start the server as the user that is allowed to pull from the
 
 h1. Roadmap
 
+* Logging: More logging options
 * Real python: I'd like to have more time to learn more Python, and fix all the wrongs in this code.
 * Auth: I'd like to make this more secure, but it will depend on the services and their hooks
 * More configuration options: I'd like the code to be usable from on ANY git service
