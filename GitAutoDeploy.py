@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, urlparse, sys, os
+import json, urlparse, sys, os, cgi
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from subprocess import call
 
@@ -42,33 +42,47 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
 
     def parseRequest(self):
         items = []
+        item = None
         length = int(self.headers.getheader('content-length'))
         contenttype = self.headers.getheader('content-type')
+        githubheader = self.headers.getheader('X-Github-Event')
         content = self.rfile.read(length)
-        # TODO: Support different contents
-        if (contentype == 'application/x-www-form-urlencoded')
+        if not self.quiet:
+          print self.headers, contenttype, content
+        # Needed for bitbucket push hook
+        if (contenttype == "application/x-www-form-urlencoded"):
           postvars = cgi.parse_qs(content, keep_blank_values=1)
-          if postvars['payload']
-            item = json.loads(postvars['payload'])
-            item['bitbucket-push'] = true
-        if (contentype == 'application/json'):
-          body = json.loads(content)
+          if postvars['payload']:
+            item = json.loads(postvars['payload'][0].strip())
+            item['bitbucket-push'] = True
+        # Most common operation, bitbucket and github uses this
+        if (contenttype == "application/json"):
+          item = json.loads(content)
         if item:
+            if not self.quiet:
+              print item
+            # Github
+            if not githubheader is None:
+              # push
+              if githubheader == "push":
+                items.append(( item['repository']['full_name'], item['ref'].replace('refs/heads/',"") ))
+                if not self.quiet:
+                  print "\nGitHub Push received", items
+              # pr-merged
+              if (githubheader == "pull_request" and item['action'] == "closed" and item['pull_request']['merged']):
+                items.append(( item['repository']['full_name'], item['pull_request']['base']['ref'] ))
+                if not self.quiet:
+                  print "\nGitHub PR-merged received", items
             # Bitbucket Push
-            if item['bitbucket-push']
-              items.append(( item['repository']['absolute_url'].strip('/'), item['commits']['branch'] ))
+            elif 'bitbucket-push' in item:
+              items.append(( item['repository']['absolute_url'].strip('/'), item['commits'][-1]['branch'] ))
+              if not self.quiet:
+                print "\BitBucket push received", items
             # Bitbucket PR-merged
-            if item['pullrequest_merged']
+            elif 'pullrequest_merged' in item:
               items.append(( item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name'] ))
-            # Github Push
-            if (self.headers.getheader('X-Github-Event') == 'push')
-              items.append(( item['repository']['full_name'], item['ref'].replace('refs/heads/',"") ))
-            # Github PR-merged
-            if (self.headers.getheader('X-Github-Event') == 'pull_request' and item['action'] == 'closed' and item['pull_request']['merged'])
-              items.append(( item['repository']['full_name'], item['pull_request']['base']['ref'] ))
-        if(not self.quiet and items['length']):
-            print "\nPOST received!"
-            print 'Updating repo:' + items[0] + ' branch:' + items[1]
+              if not self.quiet:
+                print "\BitBucket pr-merged received", items
         return items
 
     def getMatchingPaths(self, repoUrl, repoBranch):
