@@ -67,22 +67,22 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
               if githubheader == "push":
                 items.append(( item['repository']['full_name'], item['ref'].replace('refs/heads/',"") ))
                 if not self.quiet:
-                  print "\nGitHub Push received", items
+                  print "GitHub Push received", items
               # pr-merged
               if (githubheader == "pull_request" and item['action'] == "closed" and item['pull_request']['merged']):
                 items.append(( item['repository']['full_name'], item['pull_request']['base']['ref'] ))
                 if not self.quiet:
-                  print "\nGitHub PR-merged received", items
+                  print "GitHub PR-merged received", items
             # Bitbucket Push
             elif 'bitbucket-push' in item:
               items.append(( item['repository']['absolute_url'].strip('/'), item['commits'][-1]['branch'] ))
               if not self.quiet:
-                print "\BitBucket push received", items
+                print "BitBucket push received", items
             # Bitbucket PR-merged
             elif 'pullrequest_merged' in item:
               items.append(( item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name'] ))
               if not self.quiet:
-                print "\BitBucket pr-merged received", items
+                print "BitBucket pr-merged received", items
         return items
 
     def getMatchingPaths(self, repoUrl, repoBranch):

@@ -3,13 +3,13 @@
     "repositories":
     [
         {
-            "url": "https://git.service.com/author/repo1",
+            "url": "author/repo1",
             "path": "/home/path/to/cloned/repo1",
             "branch": "develop",
             "deploy": "echo deploying"
         },
         {
-            "url": "https://git.service.net/author/repo2",
+            "url": "author/repo2",
             "path": "/home/path/to/cloned/repo2"
         }
     ]
