@@ -41,12 +41,34 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
                 self.deploy(path)
 
     def parseRequest(self):
-        length = int(self.headers.getheader('content-length'))
-        body = self.rfile.read(length)
         items = []
-        if body:
-            item = json.loads(body)
-            items.append((item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name']))
+        length = int(self.headers.getheader('content-length'))
+        contenttype = self.headers.getheader('content-type')
+        content = self.rfile.read(length)
+        # TODO: Support different contents
+        if (contentype == 'application/x-www-form-urlencoded')
+          postvars = cgi.parse_qs(content, keep_blank_values=1)
+          if postvars['payload']
+            item = json.loads(postvars['payload'])
+            item['bitbucket-push'] = true
+        if (contentype == 'application/json'):
+          body = json.loads(content)
+        if item:
+            # Bitbucket Push
+            if item['bitbucket-push']
+              items.append(( item['repository']['absolute_url'].strip('/'), item['commits']['branch'] ))
+            # Bitbucket PR-merged
+            if item['pullrequest_merged']
+              items.append(( item['pullrequest_merged']['destination']['repository']['full_name'], item['pullrequest_merged']['destination']['branch']['name'] ))
+            # Github Push
+            if (self.headers.getheader('X-Github-Event') == 'push')
+              items.append(( item['repository']['full_name'], item['ref'].replace('refs/heads/',"") ))
+            # Github PR-merged
+            if (self.headers.getheader('X-Github-Event') == 'pull_request' and item['action'] == 'closed' and item['pull_request']['merged'])
+              items.append(( item['repository']['full_name'], item['pull_request']['base']['ref'] ))
+        if(not self.quiet and items['length']):
+            print "\nPOST received!"
+            print 'Updating repo:' + items[0] + ' branch:' + items[1]
         return items
 
     def getMatchingPaths(self, repoUrl, repoBranch):
@@ -95,9 +117,9 @@ def main():
             os.setsid()
 
         if(not GitAutoDeploy.quiet):
-            print 'Github Autodeploy Service v 0.1 started'
+            print 'GitAutoDeploy Service v 0.1 started'
         else:
-            print 'Github Autodeploy Service v 0.1 started in daemon mode'
+            print 'GitAutoDeploy Service v 0.1 started in daemon mode'
 
         server = HTTPServer(('', GitAutoDeploy.getConfig()['port']), GitAutoDeploy)
         server.serve_forever()

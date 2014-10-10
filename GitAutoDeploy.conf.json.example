@@ -1,14 +1,16 @@
 {
 	"port": 8001, 
 	"repositories": 
-	[{
-		"url": "https://github.com/logsol/Test-Repo", 
-		"path": "/home/logsol/projects/Test-Repo",
-		"branch": "develop"
-		"deploy": "echo deploying"
-	}, 
-	{
-		"url": "https://github.com/logsol/Katharsis-Framework",
-		"path": "/home/logsol/projects/Katharsis-Framework"
-	}]
+	[
+    {
+  		"url": "https://git.service.com/author/repo1",
+		  "path": "/home/path/to/cloned/repo1",
+		  "branch": "develop"
+		  "deploy": "echo deploying"
+	  }, 
+	  {
+  		"url": "https://git.service.net/author/repo2",
+		  "path": "/home/path/to/cloned/repo2"
+	  }
+  ]
 }
